@@ -1,0 +1,10 @@
+<cdk-virtual-scroll-viewport
+  #viewport
+  class="list-container lg"
+  [itemSize]="52.5"
+>
+  <div *cdkVirtualFor="let state of states$ | async" class="list-group-item">
+    <div class="state">{{ state.name }}</div>
+    <div class="capital">{{ state.capital }}</div>
+  </div>
+</cdk-virtual-scroll-viewport>

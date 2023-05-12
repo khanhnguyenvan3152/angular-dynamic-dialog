@@ -9,12 +9,15 @@ import {
   ExampleDialogConfig,
 } from './dynamic-dialog/example/example.component';
 import { DialogConfig } from './dynamic-dialog/dialog-config';
+import { SharedModule } from './shared/shared.module';
 
 @Component({
   selector: 'my-app',
   standalone: true,
-  imports: [CommonModule, DynamicDialogModule],
-  template: `<button (click)="showDialog()">Open dialog</button>`,
+  imports: [CommonModule, DynamicDialogModule, SharedModule],
+  template: `<button (click)="showDialog()">Open dialog</button>
+  <app-virtual-scroll></app-virtual-scroll>
+  `,
 })
 export class App implements OnInit {
   name = 'Angular';
