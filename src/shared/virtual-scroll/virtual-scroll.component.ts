@@ -1,5 +1,5 @@
 import { CdkVirtualScrollViewport } from '@angular/cdk/scrolling';
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, HostListener, OnInit, ViewChild } from '@angular/core';
 import { Observable } from 'rxjs';
 
 @Component({
@@ -15,9 +15,9 @@ export class VirtualScrollComponent implements OnInit {
     observer.complete();
   });
   constructor() {}
-
+  @HostListener('mwheelup')
   ngOnInit() {
-    console.log(this.viewport);
+    console.log(STATES);
     this.viewport.elementScrolled().subscribe((rs) => {
       console.log(rs);
     });
@@ -98,9 +98,4 @@ const USA = [
   { name: 'Wyoming', capital: 'Cheyenne' },
 ];
 
-export const STATES = flatten(
-  Array(30)
-    .fill(1)
-    .map((i) => USA)
-);
-export const FIXED_SIZE = Array(10000).fill(30);
+export const STATES = USA;
