@@ -3,11 +3,11 @@
   height: 360px;
   width: 500px;
   border: 1px solid black;
+}
 
-  .cdk-virtual-scroll-content-wrapper {
-    display: flex;
-    flex-direction: column;
-  }
+.list-container .cdk-virtual-scroll-content-wrapper {
+  display: flex;
+  flex-direction: column;
 }
 
 .state-item {

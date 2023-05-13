@@ -1,4 +1,8 @@
-import { CdkVirtualScrollViewport } from '@angular/cdk/scrolling';
+import {
+  CdkScrollable,
+  CdkVirtualScrollViewport,
+  ScrollDispatcher,
+} from '@angular/cdk/scrolling';
 import { Component, HostListener, OnInit, ViewChild } from '@angular/core';
 import { Observable } from 'rxjs';
 
@@ -9,25 +13,23 @@ import { Observable } from 'rxjs';
 })
 export class VirtualScrollComponent implements OnInit {
   @ViewChild(CdkVirtualScrollViewport) viewport: CdkVirtualScrollViewport;
+  constructor(private scrollDispatcher: ScrollDispatcher) {}
 
   states$: Observable<any> = Observable.create((observer) => {
     observer.next(STATES);
     observer.complete();
   });
-  constructor() {}
-  @HostListener('mwheelup')
   ngOnInit() {
-    console.log(STATES);
-    this.viewport.elementScrolled().subscribe((rs) => {
-      console.log(rs);
-    });
+    // this.scrollDispatcher.scrolled(200).subscribe((rs: CdkScrollable) => {
+    //   // console.log(rs.measureScrollOffset('top'));
+    // });
+    // this.viewport.elementScrolled().subscribe((rs) => {
+    //   console.log(rs);
+    // });
   }
 
-  ngAfterViewInit() {
-    this.viewport.elementScrolled().subscribe((rs: Event) => {
-      console.log({ ...rs });
-      console.log(this.viewport.measureScrollOffset('top'));
-    });
+  @HostListener('app-virtual-scroll:wheel', ['$event']) onWheel(event) {
+    console.log(event.deltaY, event.target);
   }
 }
 
