@@ -1,22 +1,6 @@
-import {
-  CdkScrollable,
-  CdkVirtualScrollViewport,
-  ScrollDispatcher,
-} from '@angular/cdk/scrolling';
-import {
-  ChangeDetectorRef,
-  Component,
-  HostListener,
-  OnInit,
-  ViewChild,
-} from '@angular/core';
-import {
-  BehaviorSubject,
-  Observable,
-  debounceTime,
-  from,
-  fromEvent,
-} from 'rxjs';
+import { CdkVirtualScrollViewport } from '@angular/cdk/scrolling';
+import { Component, HostListener, OnInit, ViewChild } from '@angular/core';
+import { BehaviorSubject, debounceTime } from 'rxjs';
 
 @Component({
   selector: 'app-virtual-scroll',
@@ -25,11 +9,7 @@ import {
 })
 export class VirtualScrollComponent implements OnInit {
   @ViewChild(CdkVirtualScrollViewport) viewport: CdkVirtualScrollViewport;
-  constructor(
-    private scrollDispatcher: ScrollDispatcher,
-    private cdr: ChangeDetectorRef
-  ) {}
-  public lastPos = 0;
+  constructor() {}
   states$: BehaviorSubject<any> = new BehaviorSubject(STATES);
   public scrolledIndex = 0;
   public loadNextPage$ = new BehaviorSubject(null);
@@ -45,38 +25,19 @@ export class VirtualScrollComponent implements OnInit {
   }
 
   ngAfterViewInit(): void {
-    console.log(this.viewport.elementRef.nativeElement.scrollHeight);
-
-    this.viewport.elementScrolled().subscribe((rs) => {
-      const currentPos = this.viewport.measureScrollOffset('top');
-      this.lastPos = currentPos;
-    });
     this.states$.subscribe((rs) => {
       if (this.loadNextPage$.value == 'prev') {
         this.viewport.scrollToIndex(51); //pageSize + firstIndex
       }
       if (this.loadNextPage$.value == 'after') {
-        console.log('asdas', this.viewport.getDataLength() - 50); //fullSize - lastPageSize
         this.viewport.scrollToIndex(this.scrolledIndex);
       }
     });
   }
   @HostListener('wheel', ['$event']) onWheel(event: WheelEvent) {
-    const currentPos = this.viewport.measureScrollOffset('top');
-    if (this.viewport.measureScrollOffset('top') < 50 && event.deltaY < 0) {
+    if (this.scrolledIndex < 2 && event.deltaY < 0) {
       this.loadNextPage$.next('prev');
     }
-    // console.log(this.scrolledIndex)
-    // console.log(event.deltaY, event.target);
-    // if((this.lastPos <= this.viewport.elementRef.nativeElement.scrollHeight / 10) && (currentPos <= this.lastPos) && event.deltaY < 0) {
-    //   from([1]).pipe(debounceTime(1000)).subscribe(() => {
-    //     this.states$.next([...STATES.reverse(),...STATES]);
-    //   })
-    //   console.log()
-    //   this.cdr.detectChanges();
-    //   console.log(this.lastPos);
-    //   console.log(this.states$.value.length)
-    // }
   }
 
   onScroll(event) {
