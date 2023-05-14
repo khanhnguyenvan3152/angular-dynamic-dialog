@@ -41,6 +41,7 @@ export class VirtualScrollComponent implements OnInit {
     //   console.log(rs);
     // });
     this.loadNextPage$.pipe(debounceTime(300)).subscribe((rs) => {
+      console.log(rs);
       if (rs == 'prev') {
         this.states$.next([...STATES, ...this.states$.value]);
       }
@@ -51,23 +52,27 @@ export class VirtualScrollComponent implements OnInit {
   }
 
   ngAfterViewInit(): void {
-    console.log(STATES.length);
+    console.log(this.viewport.elementRef.nativeElement.scrollHeight);
 
     this.viewport.elementScrolled().subscribe((rs) => {
       const currentPos = this.viewport.measureScrollOffset('top');
       this.lastPos = currentPos;
     });
     this.states$.subscribe((rs) => {
-      this.viewport.scrollToIndex(51); //pageSize + firstIndex
+      if (this.loadNextPage$.value == 'prev') {
+        this.viewport.scrollToIndex(51); //pageSize + firstIndex
+      }
+      if (this.loadNextPage$.value == 'after') {
+        console.log('asdas', this.viewport.getDataLength() - 50); //fullSize - lastPageSize
+
+        this.viewport.scrollToIndex(this.scrolledIndex);
+      }
     });
   }
   @HostListener('wheel', ['$event']) onWheel(event: WheelEvent) {
     const currentPos = this.viewport.measureScrollOffset('top');
-    if (this.scrolledIndex < 2) {
+    if (this.scrolledIndex < 2 && event.deltaY < 0) {
       this.loadNextPage$.next('prev');
-    }
-    if (this.scrolledIndex > this.states$.value.length - 2) {
-      this.loadNextPage$.next('after');
     }
     // console.log(this.scrolledIndex)
     // console.log(event.deltaY, event.target);
@@ -83,7 +88,18 @@ export class VirtualScrollComponent implements OnInit {
   }
 
   onScroll(event) {
-    console.log('onscroll', this.scrolledIndex);
+    console.log(
+      this.viewport.elementRef.nativeElement.scrollHeight,
+      this.viewport.elementRef.nativeElement.scrollTop
+    );
+    if (
+      this.viewport.elementRef.nativeElement.scrollHeight -
+        this.viewport.measureScrollOffset('top') -
+        this.viewport.elementRef.nativeElement.clientHeight <=
+      50
+    ) {
+      this.loadNextPage$.next('after');
+    }
   }
 
   public get size() {
