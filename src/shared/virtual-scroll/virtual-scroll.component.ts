@@ -35,7 +35,11 @@ export class VirtualScrollComponent implements OnInit {
     });
   }
   @HostListener('wheel', ['$event']) onWheel(event: WheelEvent) {
-    if (this.scrolledIndex < 2 && event.deltaY < 0) {
+    if (
+      (this.scrolledIndex < 2 && event.deltaY < 0) ||
+      (event.deltaY < 0 &&
+        this.viewport.elementRef.nativeElement.scrollTop < 50)
+    ) {
       this.loadNextPage$.next('prev');
     }
   }
