@@ -34,14 +34,7 @@ export class VirtualScrollComponent implements OnInit {
   public scrolledIndex = 0;
   public loadNextPage$ = new BehaviorSubject(null);
   ngOnInit() {
-    // this.scrollDispatcher.scrolled(200).subscribe((rs: CdkScrollable) => {
-    //   // console.log(rs.measureScrollOffset('top'));
-    // });
-    // this.viewport.elementScrolled().subscribe((rs) => {
-    //   console.log(rs);
-    // });
     this.loadNextPage$.pipe(debounceTime(300)).subscribe((rs) => {
-      console.log(rs);
       if (rs == 'prev') {
         this.states$.next([...STATES, ...this.states$.value]);
       }
@@ -64,14 +57,13 @@ export class VirtualScrollComponent implements OnInit {
       }
       if (this.loadNextPage$.value == 'after') {
         console.log('asdas', this.viewport.getDataLength() - 50); //fullSize - lastPageSize
-
         this.viewport.scrollToIndex(this.scrolledIndex);
       }
     });
   }
   @HostListener('wheel', ['$event']) onWheel(event: WheelEvent) {
     const currentPos = this.viewport.measureScrollOffset('top');
-    if (this.scrolledIndex < 2 && event.deltaY < 0) {
+    if (this.viewport.measureScrollOffset('top') < 50 && event.deltaY < 0) {
       this.loadNextPage$.next('prev');
     }
     // console.log(this.scrolledIndex)
@@ -88,10 +80,6 @@ export class VirtualScrollComponent implements OnInit {
   }
 
   onScroll(event) {
-    console.log(
-      this.viewport.elementRef.nativeElement.scrollHeight,
-      this.viewport.elementRef.nativeElement.scrollTop
-    );
     if (
       this.viewport.elementRef.nativeElement.scrollHeight -
         this.viewport.measureScrollOffset('top') -
