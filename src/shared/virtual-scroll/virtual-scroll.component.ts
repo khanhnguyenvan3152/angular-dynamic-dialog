@@ -3,8 +3,20 @@ import {
   CdkVirtualScrollViewport,
   ScrollDispatcher,
 } from '@angular/cdk/scrolling';
-import { Component, HostListener, OnInit, ViewChild } from '@angular/core';
-import { Observable } from 'rxjs';
+import {
+  ChangeDetectorRef,
+  Component,
+  HostListener,
+  OnInit,
+  ViewChild,
+} from '@angular/core';
+import {
+  BehaviorSubject,
+  Observable,
+  debounceTime,
+  from,
+  fromEvent,
+} from 'rxjs';
 
 @Component({
   selector: 'app-virtual-scroll',
@@ -13,12 +25,14 @@ import { Observable } from 'rxjs';
 })
 export class VirtualScrollComponent implements OnInit {
   @ViewChild(CdkVirtualScrollViewport) viewport: CdkVirtualScrollViewport;
-  constructor(private scrollDispatcher: ScrollDispatcher) {}
-
-  states$: Observable<any> = Observable.create((observer) => {
-    observer.next(STATES);
-    observer.complete();
-  });
+  constructor(
+    private scrollDispatcher: ScrollDispatcher,
+    private cdr: ChangeDetectorRef
+  ) {}
+  public lastPos = 0;
+  states$: BehaviorSubject<any> = new BehaviorSubject(STATES);
+  public scrolledIndex = 0;
+  public loadNextPage$ = new BehaviorSubject(null);
   ngOnInit() {
     // this.scrollDispatcher.scrolled(200).subscribe((rs: CdkScrollable) => {
     //   // console.log(rs.measureScrollOffset('top'));
@@ -26,10 +40,58 @@ export class VirtualScrollComponent implements OnInit {
     // this.viewport.elementScrolled().subscribe((rs) => {
     //   console.log(rs);
     // });
+    this.loadNextPage$.pipe(debounceTime(300)).subscribe((rs) => {
+      if (rs == 'prev') {
+        this.states$.next([...STATES, ...this.states$.value]);
+      }
+      if (rs == 'after') {
+        this.states$.next([...this.states$.value, ...STATES]);
+      }
+    });
   }
 
-  @HostListener('app-virtual-scroll:wheel', ['$event']) onWheel(event) {
-    console.log(event.deltaY, event.target);
+  ngAfterViewInit(): void {
+    console.log(STATES.length);
+
+    this.viewport.elementScrolled().subscribe((rs) => {
+      const currentPos = this.viewport.measureScrollOffset('top');
+      this.lastPos = currentPos;
+    });
+    this.states$.subscribe((rs) => {
+      this.viewport.scrollToIndex(51); //pageSize + firstIndex
+    });
+  }
+  @HostListener('wheel', ['$event']) onWheel(event: WheelEvent) {
+    const currentPos = this.viewport.measureScrollOffset('top');
+    if (this.scrolledIndex < 2) {
+      this.loadNextPage$.next('prev');
+    }
+    if (this.scrolledIndex > this.states$.value.length - 2) {
+      this.loadNextPage$.next('after');
+    }
+    // console.log(this.scrolledIndex)
+    // console.log(event.deltaY, event.target);
+    // if((this.lastPos <= this.viewport.elementRef.nativeElement.scrollHeight / 10) && (currentPos <= this.lastPos) && event.deltaY < 0) {
+    //   from([1]).pipe(debounceTime(1000)).subscribe(() => {
+    //     this.states$.next([...STATES.reverse(),...STATES]);
+    //   })
+    //   console.log()
+    //   this.cdr.detectChanges();
+    //   console.log(this.lastPos);
+    //   console.log(this.states$.value.length)
+    // }
+  }
+
+  onScroll(event) {
+    console.log('onscroll', this.scrolledIndex);
+  }
+
+  public get size() {
+    return this.states$.value.length;
+  }
+
+  onScrolledChange(event) {
+    this.scrolledIndex = event;
   }
 }
 

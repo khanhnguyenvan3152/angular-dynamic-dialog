@@ -2,6 +2,8 @@
   #viewport
   class="list-container lg"
   [itemSize]="30"
+  (scrolledIndexChange)="onScrolledChange($event)"
+  (scroll)="onScroll($event)"
 >
   <div *cdkVirtualFor="let state of states$ | async" class="list-group-item">
     <div class="state">{{ state.name }}</div>
